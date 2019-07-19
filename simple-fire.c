@@ -183,20 +183,20 @@ window_next_buffer(struct window *window)
 }
 union x {
     struct color {
-    uint8_t a;
-    uint8_t r;
-    uint8_t g;
     uint8_t b;
+    uint8_t g;
+    uint8_t r;
+    uint8_t a;
     } c; 
     uint32_t val;
 }colors[256];
 
-uint8_t * map = 0;
+uint8_t heatmap[250*250];// = 0;
 
 static void
 setup_palette() 
 {
-    map = malloc(250*250);
+    //heatmap = malloc(250*250);
     int i;
     for (i = 0; i < 32; ++i) {
         /* black to blue, 32 values*/
@@ -231,28 +231,32 @@ setup_palette()
 
 static uint32_t xrgb(uint8_t heat) {
     //return (colors[heat].val & 0x00ffffff) | (heat << 24);
-    return heat;
+    return colors[heat].val;
 }
 
 static int heat(int pos, uint32_t *pixel) {
     //return pixel[pos] >> 24;
-    return pixel[pos];
+    //return pixel[pos];
+    return heatmap[pos];
+}
+static uint32_t * pixel;
+
+static void setHeat(uint8_t heat, int pos ) {
+    heatmap[pos] = heat;
+    pixel[pos] = xrgb(heat);
 }
 
-static void setHeat(uint8_t heat, uint32_t *pixel) {
-    *pixel = xrgb(heat);
-}
 
 static void
 paint_pixels_fire(void *image, int padding, int width, int height, uint32_t time)
 {
-    uint32_t *pixel = image;
+    pixel = image;
     int i, j,x, y, index, temp;
     j = width  * height - 1;  // bottom row
     for (i = 0; i < width; i++) {
         int random = 1 + (int)(16.0 * (rand()/(RAND_MAX+1.0)));
         //pixel[i+j] = xrgb((random > 9) ? 0xff : 0x00);
-        setHeat((random>9) ? 0xff: 0, pixel+i+j);
+        setHeat((random>9) ? 0xff: 0, i+j);
     }
     
     /* move fire upward, start at bottom */
@@ -282,7 +286,7 @@ paint_pixels_fire(void *image, int padding, int width, int height, uint32_t time
                 temp -=1; //decay
 
             //pixel[j+i-width] = xrgb(temp);    // pixel above
-            setHeat(temp, pixel+j+i-width);
+            setHeat(temp, j+i-width);
         }
         j -= width;
     }
