@@ -4,7 +4,7 @@ connect: connect.c
 registry: registry.c
 	cc -o registry registry.c -lwayland-client
 
-suface: surface.c
+surface: surface.c
 	cc -o surface surface.c -lwayland-client
 
 sharedmem: sharedmem.c
