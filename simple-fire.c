@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <math.h>
 
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
@@ -246,6 +247,48 @@ static void setHeat(uint8_t heat, int pos ) {
     pixel[pos] = xrgb(heat);
 }
 
+static int
+aSin(int i)
+{
+    float rad = ((float)i * 0.703125) * 0.0174532;
+    return sin(rad) * 1024;
+}
+
+static void
+paint_pixels_plasma(void *image, int padding, int width, int height, uint32_t time)
+{
+    static int pos1=0, pos2=0, pos3=0, pos4 =0, tpos1=0, tpos2=0, tpos3=0, tpos4=0;
+    int i,j;
+
+    pixel = image;
+
+    for(i=padding; i < height-padding; i++) {
+        tpos1 = pos1 +5;
+        tpos2 = pos2 +3;
+        tpos3 &= 0x1ff; //lower 9 bits
+        tpos4 &= 0x1ff;
+
+        for(j=padding; j < width-padding; j++) {
+
+            tpos1 &= 0x1ff;
+            tpos2 &= 0x1ff;
+
+            int x = aSin(tpos1) + aSin(tpos2) + aSin(tpos3) + aSin(tpos4);
+            uint8_t index = 0x80 + (x>>4);
+            pixel[i*width+j] = index;
+
+            tpos1 += 5;
+            tpos2 += 3;
+        }
+
+        tpos3 += 1;
+        tpos4 += 3;
+    }
+
+    // move the plasma
+    pos1 += 9;
+    pos3 += 8;
+}
 
 static void
 paint_pixels_fire(void *image, int padding, int width, int height, uint32_t time)
@@ -354,7 +397,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		abort();
 	}
 
-	paint_pixels_fire(buffer->shm_data, 20, window->width, window->height, time);
+  paint_pixels_plasma(buffer->shm_data, 20, window->width, window->height, time);
 
 	wl_surface_attach(window->surface, buffer->buffer, 0, 0);
 	wl_surface_damage(window->surface,
