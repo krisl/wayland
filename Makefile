@@ -24,3 +24,6 @@ seat: seat.c
 
 pointer: pointer.c
 	cc -o pointer pointer.c -lwayland-client -lwayland-egl -lEGL -lGLESv2
+
+cursor: cursor.c
+	cc -o cursor cursor.c -lwayland-client -lwayland-egl -lEGL -lGLESv2 -lwayland-cursor
