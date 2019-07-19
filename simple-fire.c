@@ -182,6 +182,48 @@ window_next_buffer(struct window *window)
 	return buffer;
 }
 
+struct color {
+    uint8_t a;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} colors[32];
+
+static void
+setup_palette()
+{
+    int i;
+    for (i = 0; i < 32; ++i) {
+        /* black to blue, 32 values*/
+        colors[i].b = i << 1;
+
+        /* blue to red, 32 values*/
+        colors[i + 32].r = i << 3;
+        colors[i + 32].b =  64 - (i << 1);
+
+        /*red to yellow, 32 values*/
+        colors[i + 64].r = 255;
+        colors[i + 64].g = i << 3;
+
+        /* yellow to white, 162 */
+        colors[i + 96].r = 255;
+        colors[i + 96].g = 255;
+        colors[i + 96].b = i << 2;
+        colors[i + 128].r = 255;
+        colors[i + 128].g = 255;
+        colors[i + 128].b = 64 + (i << 2);
+        colors[i + 160].r = 255;
+        colors[i + 160].g = 255;
+        colors[i + 160].b = 128 + (i << 2);
+        colors[i + 192].r = 255;
+        colors[i + 192].g = 255;
+        colors[i + 192].b = 192 + i;
+        colors[i + 224].r = 255;
+        colors[i + 224].g = 255;
+        colors[i + 224].b = 224 + i;
+    }
+}
+
 static void
 paint_pixels_fire(void *image, int padding, int width, int height, uint32_t time)
 {
