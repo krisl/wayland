@@ -18,3 +18,6 @@ damage: damage.c
 
 eglexample: eglexample.c
 	cc -o eglexample eglexample.c -lwayland-client -lwayland-egl -lEGL
+
+seat: seat.c
+	cc -o seat seat.c -lwayland-client
