@@ -248,7 +248,7 @@ static void setHeat(uint8_t heat, int pos ) {
 }
 
 static int
-aSin(int i)
+aSin(int i) 
 {
     float rad = ((float)i * 0.703125) * 0.0174532;
     return sin(rad) * 1024;
@@ -261,6 +261,8 @@ paint_pixels_plasma(void *image, int padding, int width, int height, uint32_t ti
     int i,j;
 
     pixel = image;
+    tpos4 = pos4;
+    tpos3 = pos3;
 
     for(i=padding; i < height-padding; i++) {
         tpos1 = pos1 +5;
@@ -269,13 +271,13 @@ paint_pixels_plasma(void *image, int padding, int width, int height, uint32_t ti
         tpos4 &= 0x1ff;
 
         for(j=padding; j < width-padding; j++) {
-
+            
             tpos1 &= 0x1ff;
             tpos2 &= 0x1ff;
-
+                
             int x = aSin(tpos1) + aSin(tpos2) + aSin(tpos3) + aSin(tpos4);
             uint8_t index = 0x80 + (x>>4);
-            pixel[i*width+j] = index;
+            pixel[i*width+j] = x & 0xff | (x/5) << 8 | (x/3) << 16; //index;
 
             tpos1 += 5;
             tpos2 += 3;
@@ -287,7 +289,7 @@ paint_pixels_plasma(void *image, int padding, int width, int height, uint32_t ti
 
     // move the plasma
     pos1 += 9;
-    pos3 += 8;
+    pos3 += 8; 
 }
 
 static void
@@ -295,33 +297,31 @@ paint_pixels_fire(void *image, int padding, int width, int height, uint32_t time
 {
     pixel = image;
     int i, j,x, y, index, temp;
-    j = width  * height - 1;  // bottom row
-    for (i = 0; i < width; i++) {
+    j = width  * (height-padding - 1);  // bottom row
+    for (i = padding; i < width-padding; i++) {
         int random = 1 + (int)(16.0 * (rand()/(RAND_MAX+1.0)));
         //pixel[i+j] = xrgb((random > 9) ? 0xff : 0x00);
         setHeat((random>9) ? 0xff: 0, i+j);
     }
     
     /* move fire upward, start at bottom */
-    for (index = 0; index < 60; index++) {
-        for (i = 0; i < width; i++) {
-            if (i == 0) { // left border
-                temp = heat(j, pixel); // left border pixel
-                temp += heat(j+1, pixel); // next right pixel
-                temp += heat(j-width, pixel); //left pixel above
+    for (index = padding; index < height-padding; index++) {
+        for (i = padding; i < width-padding; i++) {
+            
+            temp = heat(j+i, pixel); // left border pixel
+            temp += heat(j+i-width, pixel); //left pixel above
+           
+            if (i == padding) { // left border
+                temp += heat(j+i+1, pixel); // next right pixel
                 temp /= 3; //average
             }
-            else if (i == width-1) {      // right border
-                temp = heat(j+i, pixel);        // right border pixel
+            else if (i == width-1-padding) {      // right border
                 temp += heat(j+i-1, pixel);     // next left pixel
-                temp += heat(j+i-width, pixel); // right border above
                 temp /= 3; //average
             }
             else {
-                temp = heat(j+i, pixel);      // this pixel
                 temp += heat(j+i+1, pixel);   // right pixel
                 temp += heat(j+i-1, pixel);   // left pixel
-                temp += heat(j+i-width, pixel); //above pixel
                 temp /= 4; // average
             }
 
@@ -397,7 +397,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		abort();
 	}
 
-  paint_pixels_plasma(buffer->shm_data, 20, window->width, window->height, time);
+	paint_pixels_plasma(buffer->shm_data, 20, window->width, window->height, time);
 
 	wl_surface_attach(window->surface, buffer->buffer, 0, 0);
 	wl_surface_damage(window->surface,
@@ -537,7 +537,7 @@ main(int argc, char **argv)
 	/* Initialise damage to full surface, so the padding gets painted */
 	wl_surface_damage(window->surface, 0, 0,
 			  window->width, window->height);
-  setup_palette();
+    setup_palette();
 	redraw(window, NULL, 0);
 
 	while (running && ret != -1)
