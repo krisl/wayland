@@ -181,47 +181,57 @@ window_next_buffer(struct window *window)
 
 	return buffer;
 }
-
-struct color {
+union x {
+    struct color {
     uint8_t a;
     uint8_t r;
     uint8_t g;
     uint8_t b;
-} colors[32];
+    } c; 
+    uint32_t val;
+}colors[256];
 
 static void
-setup_palette()
+setup_palette() 
 {
     int i;
     for (i = 0; i < 32; ++i) {
         /* black to blue, 32 values*/
-        colors[i].b = i << 1;
-
+        colors[i].c.b = i << 1;
+         
         /* blue to red, 32 values*/
-        colors[i + 32].r = i << 3;
-        colors[i + 32].b =  64 - (i << 1);
-
+        colors[i + 32].c.r = i << 3;
+        colors[i + 32].c.b =  64 - (i << 1);
+        
         /*red to yellow, 32 values*/
-        colors[i + 64].r = 255;
-        colors[i + 64].g = i << 3;
-
+        colors[i + 64].c.r = 255;
+        colors[i + 64].c.g = i << 3;
+        
         /* yellow to white, 162 */
-        colors[i + 96].r = 255;
-        colors[i + 96].g = 255;
-        colors[i + 96].b = i << 2;
-        colors[i + 128].r = 255;
-        colors[i + 128].g = 255;
-        colors[i + 128].b = 64 + (i << 2);
-        colors[i + 160].r = 255;
-        colors[i + 160].g = 255;
-        colors[i + 160].b = 128 + (i << 2);
-        colors[i + 192].r = 255;
-        colors[i + 192].g = 255;
-        colors[i + 192].b = 192 + i;
-        colors[i + 224].r = 255;
-        colors[i + 224].g = 255;
-        colors[i + 224].b = 224 + i;
-    }
+        colors[i + 96].c.r = 255;
+        colors[i + 96].c.g = 255;
+        colors[i + 96].c.b = i << 2;
+        colors[i + 128].c.r = 255;
+        colors[i + 128].c.g = 255;
+        colors[i + 128].c.b = 64 + (i << 2);
+        colors[i + 160].c.r = 255;
+        colors[i + 160].c.g = 255;
+        colors[i + 160].c.b = 128 + (i << 2);
+        colors[i + 192].c.r = 255;
+        colors[i + 192].c.g = 255;
+        colors[i + 192].c.b = 192 + i;
+        colors[i + 224].c.r = 255;
+        colors[i + 224].c.g = 255;
+        colors[i + 224].c.b = 224 + i;
+    } 
+}
+
+static uint32_t xrgb(uint8_t heat) {
+    return (colors[heat].val & 0x00ffffff) | (heat << 24);
+}
+
+static int heat(int pos, uint32_t *pixel) {
+    return pixel[pos] >> 24;
 }
 
 static void
@@ -232,36 +242,36 @@ paint_pixels_fire(void *image, int padding, int width, int height, uint32_t time
     j = width  * height - 1;  // bottom row
     for (i = 0; i < width; i++) {
         int random = 1 + (int)(16.0 * (rand()/(RAND_MAX+1.0)));
-        pixel[i+j] = (random > 9) ? 0xff : 0x00;
+        pixel[i+j] = xrgb((random > 9) ? 0xff : 0x00);
     }
     
     /* move fire upward, start at bottom */
     for (index = 0; index < 60; index++) {
         for (i = 0; i < width; i++) {
             if (i == 0) { // left border
-                temp = pixel[j]; // left border pixel
-                temp += pixel[j+1]; // next right pixel
-                temp += pixel[j-width]; //left pixel above
+                temp = heat(j, pixel); // left border pixel
+                temp += heat(j+1, pixel); // next right pixel
+                temp += heat(j-width, pixel); //left pixel above
                 temp /= 3; //average
             }
             else if (i == width-1) {      // right border
-                temp = pixel[j+i];        // right border pixel
-                temp += pixel[j+i-1];     // next left pixel
-                temp += pixel[j+i-width]; // right border above
+                temp = heat(j+i, pixel);        // right border pixel
+                temp += heat(j+i-1, pixel);     // next left pixel
+                temp += heat(j+i-width, pixel); // right border above
                 temp /= 3; //average
             }
             else {
-                temp = pixel[j+i];      // this pixel
-                temp += pixel[j+i+1];   // right pixel
-                temp += pixel[j+i-1];   // left pixel
-                temp += pixel[j+i-width]; //above pixel
+                temp = heat(j+i, pixel);      // this pixel
+                temp += heat(j+i+1, pixel);   // right pixel
+                temp += heat(j+i-1, pixel);   // left pixel
+                temp += heat(j+i-width, pixel); //above pixel
                 temp /= 4; // average
             }
 
             if (temp > 1)
                 temp -=1; //decay
 
-            pixel[j+i-width] = temp;    // pixel above
+            pixel[j+i-width] = xrgb(temp);    // pixel above
         }
         j -= width;
     }
@@ -469,7 +479,7 @@ main(int argc, char **argv)
 	/* Initialise damage to full surface, so the padding gets painted */
 	wl_surface_damage(window->surface, 0, 0,
 			  window->width, window->height);
-
+  setup_palette();
 	redraw(window, NULL, 0);
 
 	while (running && ret != -1)
