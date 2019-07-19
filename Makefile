@@ -21,3 +21,6 @@ eglexample: eglexample.c
 
 seat: seat.c
 	cc -o seat seat.c -lwayland-client
+
+pointer: pointer.c
+	cc -o pointer pointer.c -lwayland-client -lwayland-egl -lEGL -lGLESv2
