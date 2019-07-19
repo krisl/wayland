@@ -6,3 +6,6 @@ registry: registry.c
 
 suface: surface.c
 	cc -o surface surface.c -lwayland-client
+
+sharedmem: sharedmem.c
+	cc -o sharedmem sharedmem.c -lwayland-client
