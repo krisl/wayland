@@ -23,7 +23,7 @@
 #ifndef OS_COMPATIBILITY_H
 #define OS_COMPATIBILITY_H
 
-#include "config.h"
+//#include "config.h"
 
 #include <sys/types.h>
 
