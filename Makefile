@@ -14,7 +14,7 @@ surface2: surface2.c
 	cc -o surface2 surface2.c -lwayland-client
 
 damage: damage.c
-	cc -o damage damage.c -lwayland-client
+	cc -o damage damage.c shared/os\-compatibility.c -lwayland-client
 
 eglexample: eglexample.c
 	cc -o eglexample eglexample.c -lwayland-client -lwayland-egl -lEGL
