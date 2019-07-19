@@ -8,7 +8,7 @@ surface: surface.c
 	cc -o surface surface.c -lwayland-client
 
 sharedmem: sharedmem.c
-	cc -o sharedmem sharedmem.c -lwayland-client
+	cc -o sharedmem sharedmem.c shared/os\-compatibility.c -lwayland-client
 
 surface2: surface2.c
 	cc -o surface2 surface2.c -lwayland-client
