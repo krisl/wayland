@@ -9,3 +9,6 @@ surface: surface.c
 
 sharedmem: sharedmem.c
 	cc -o sharedmem sharedmem.c -lwayland-client
+
+surface2: surface2.c
+	cc -o surface2 surface2.c -lwayland-client
