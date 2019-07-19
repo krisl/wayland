@@ -27,3 +27,6 @@ pointer: pointer.c
 
 cursor: cursor.c
 	cc -o cursor cursor.c -lwayland-client -lwayland-egl -lEGL -lGLESv2 -lwayland-cursor
+
+keyboard: keyboard.c
+	cc -o keyboard keyboard.c -lwayland-client -lwayland-egl -lEGL -lGLESv2
