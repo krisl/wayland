@@ -30,3 +30,6 @@ cursor: cursor.c
 
 keyboard: keyboard.c
 	cc -o keyboard keyboard.c -lwayland-client -lwayland-egl -lEGL -lGLESv2
+
+simple-fire: simple-fire.c
+	cc -o simple-fire simple-fire.c shared/os\-compatibility.c -lwayland-client
