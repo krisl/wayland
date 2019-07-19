@@ -12,3 +12,6 @@ sharedmem: sharedmem.c
 
 surface2: surface2.c
 	cc -o surface2 surface2.c -lwayland-client
+
+damage: damage.c
+	cc -o damage damage.c -lwayland-client
